@@ -1,0 +1,32 @@
+{
+  "models_dir": "/Users/shruthisubramanian/Downloads/models",
+  "models": {
+    "rvl_classifier.pt": "ViT-based document classifier (receipt vs other)",
+    "layoutlm_extractor.pt": "LayoutLMv3 for field extraction (vendor/date/total)",
+    "anomaly_detector.pt": "Isolation Forest for anomaly detection"
+  },
+  "pipeline": {
+    "nodes": [
+      "ingest",
+      "classify",
+      "ocr",
+      "extract",
+      "anomaly",
+      "route"
+    ],
+    "framework": "LangGraph"
+  },
+  "metrics": {
+    "num_samples": 20,
+    "ocr_accuracy": 0.5333333333333333,
+    "vendor_accuracy": 0.75,
+    "date_accuracy": 0.85,
+    "total_accuracy": 0.0,
+    "extraction_f1": 0.6956521739130436,
+    "straight_through_rate": 0.1,
+    "review_rate": 0.9,
+    "reject_rate": 0.0,
+    "avg_processing_time": 1.0378559350967407,
+    "error_rate": 0.0
+  }
+}
