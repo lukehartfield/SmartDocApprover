@@ -39,3 +39,11 @@ logs/
 # Temporary files
 *.tmp
 *.temp
+
+# Documentation (LaTeX source files)
+docs/*.tex
+docs/*.aux
+docs/*.log
+docs/*.out
+docs/*.toc
+docs/*.pdf
