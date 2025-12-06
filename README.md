@@ -1,50 +1,62 @@
-# Receipt Processing Pipeline with AI Agents
+# Receipt Processing Pipeline
 
-An intelligent document processing pipeline using Vision Transformers (ViT), LayoutLMv3, and LangGraph for automated receipt classification, field extraction, and anomaly detection.
+An end-to-end document processing system that classifies receipts, extracts structured fields, detects anomalies, and makes routing decisions. Built with ensemble learning and human-in-the-loop feedback.
 
-## 🚀 Quick Start
+## Quick Start
 
-### Open in Google Colab
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/RogueTex/StreamingDataforModelTraining/blob/main/NewVerPynbAgent.ipynb)
 
-### Features
-- **Document Classification**: ViT-based classifier to identify receipts vs other documents
-- **Field Extraction**: LayoutLMv3 for extracting vendor, date, total, and line items
-- **Anomaly Detection**: Isolation Forest to detect suspicious receipts
-- **AI Agent Workflow**: LangGraph-powered intelligent processing pipeline
-- **Gradio Demo**: Interactive web interface for testing
+Click the badge above to run the full pipeline in Google Colab with GPU support.
 
-## 📁 Project Structure
+## What It Does
+
+1. **Classification** — Determines if an uploaded image is a receipt (ViT + ResNet18 ensemble)
+2. **OCR** — Extracts text using EasyOCR with automatic retry on low-quality images
+3. **Field Extraction** — Identifies vendor, date, and total using a 4-strategy ensemble (LayoutLMv3, regex, position-based, NER)
+4. **Anomaly Detection** — Flags suspicious patterns using Isolation Forest, XGBoost, HistGradientBoosting, and One-Class SVM
+5. **Routing** — LangGraph workflow decides: approve, reject, or send for human review
+6. **Learning** — Fine-tunes models from user feedback every 5 corrections
+
+## Project Structure
 
 ```
 StreamingDataforModelTraining/
-├── NewVerPynbAgent.ipynb    # Main notebook with full pipeline
-├── models/                   # Trained model files (.pt)
-│   ├── rvl_classifier.pt    # ViT Document Classifier (~21 MB)
-│   ├── layoutlm_extractor.pt # LayoutLM Field Extractor (~478 MB)
-│   └── anomaly_detector.pt  # Anomaly Detection Model (~1.5 MB)
-├── data/                     # Dataset cache and synthetic data
+├── NewVerPynbAgent.ipynb      # Main notebook (run this)
+├── models/
+│   ├── rvl_classifier.pt      # ViT document classifier (~21 MB)
+│   ├── resnet18_rvlcdip.pt    # ResNet18 classifier (~44 MB)
+│   ├── layoutlm_extractor.pt  # LayoutLMv3 field extraction (~478 MB)
+│   └── anomaly_detector.pt    # Anomaly detection ensemble (~2 MB)
+├── assets/images/             # Evaluation visualizations
+├── feedback_data/             # Stored user corrections
+├── docs/
+│   ├── aml_presentation.tex   # Technical documentation
+│   └── project_presentation.tex
 └── README.md
 ```
 
-## 🔧 Models
+## Performance
 
-After running the notebook, models will be saved to the `models/` directory:
+| Component | Single Model | Ensemble | Improvement |
+|-----------|--------------|----------|-------------|
+| Classification | 98% | 100% | +2% |
+| Field Extraction (F1) | 72% | 79% | +7% |
+| Anomaly Detection | 88% | 100% | +12% |
 
-| Model | Size | Description |
-|-------|------|-------------|
-| `rvl_classifier.pt` | ~21 MB | ViT-based document classifier |
-| `layoutlm_extractor.pt` | ~478 MB | LayoutLMv3 field extraction |
-| `anomaly_detector.pt` | ~1.5 MB | Isolation Forest anomaly detector |
+Results from 100-sample test set. Evaluation plots saved to `assets/images/`.
 
-## 📊 Datasets Used
+## Models
 
-- **RVL-CDIP**: Document classification (optional, uses synthetic if unavailable)
-- **CORD**: Receipt understanding dataset
-- **FUNSD**: Form understanding dataset
-- **SROIE**: Receipt OCR dataset (optional)
+| File | Size | Description |
+|------|------|-------------|
+| `rvl_classifier.pt` | 21 MB | ViT-Tiny document classifier |
+| `resnet18_rvlcdip.pt` | 44 MB | ResNet18 trained on RVL-CDIP |
+| `layoutlm_extractor.pt` | 478 MB | LayoutLMv3 for field extraction |
+| `anomaly_detector.pt` | 2 MB | 4-model anomaly ensemble |
 
-## 🛠️ Requirements
+Models are stored with Git LFS. Total size: ~550 MB.
+
+## Requirements
 
 - Python 3.8+
 - PyTorch
@@ -52,20 +64,41 @@ After running the notebook, models will be saved to the `models/` directory:
 - EasyOCR
 - LangGraph
 - Gradio
+- scikit-learn
+- XGBoost
 
-## 📝 Usage
+All dependencies are installed automatically in the Colab notebook.
 
-1. Open the notebook in Google Colab (click badge above)
-2. Run all cells to train models
-3. Use the Gradio interface to test with your own receipts
-4. Download trained models to `models/` folder
+## Usage
 
-## 🔗 Links
+1. Open the notebook in Google Colab
+2. Run cells 1-30 to load models
+3. Run the Gradio cell to launch the interface
+4. Upload a receipt image
+5. Review results and provide feedback if needed
 
-- [LangGraph Documentation](https://langchain-ai.github.io/langgraph/)
-- [LayoutLMv3 Paper](https://arxiv.org/abs/2204.08387)
+For local development:
+```bash
+git clone https://github.com/RogueTex/StreamingDataforModelTraining.git
+cd StreamingDataforModelTraining
+pip install torch transformers easyocr langgraph gradio scikit-learn xgboost
+jupyter notebook NewVerPynbAgent.ipynb
+```
+
+## Documentation
+
+- `docs/aml_presentation.tex` — Detailed technical documentation
+- `docs/project_presentation.tex` — Project overview for presentations
+
+Compile with pdflatex or upload to Overleaf. Images should be placed in an `images/` folder.
+
+## References
+
+- [LangGraph](https://langchain-ai.github.io/langgraph/)
+- [LayoutLMv3](https://arxiv.org/abs/2204.08387)
 - [Vision Transformer](https://arxiv.org/abs/2010.11929)
+- [RVL-CDIP Dataset](https://www.cs.cmu.edu/~aharley/rvl-cdip/)
 
-## 📄 License
+## License
 
-MIT License
+MIT
