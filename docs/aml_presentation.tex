@@ -12,6 +12,9 @@
 \usepackage{enumitem}
 \usetikzlibrary{shapes.geometric, arrows, positioning, fit, backgrounds}
 
+% Image path for Overleaf compatibility
+\graphicspath{{images/}}
+
 % Clean color palette
 \definecolor{primary}{RGB}{37, 99, 235}
 \definecolor{success}{RGB}{22, 163, 74}
@@ -85,7 +88,7 @@ This is orchestrated using \textbf{LangGraph}, which defines the workflow as a s
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.95\textwidth]{../assets/images/pipeline_summary.png}
+    \includegraphics[width=0.95\textwidth]{pipeline_summary.png}
     \caption{Pipeline evaluation summary: 1,000 receipts processed with 95\% success rate, 65\% auto-approved}
 \end{figure}
 
@@ -137,7 +140,7 @@ ViT (Single Model) & 98.0\% & 96.8\% & 100.0\% & 0.997 \\
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.98\textwidth]{../assets/images/classifier_evaluation.png}
+    \includegraphics[width=0.98\textwidth]{classifier_evaluation.png}
     \caption{Classification evaluation: confusion matrices show ensemble eliminates all false positives; ROC curves show AUC improvement from 0.997 to 1.000}
 \end{figure}
 
@@ -171,7 +174,7 @@ Receipt images are often blurry, skewed, or poorly lit. Standard OCR fails frequ
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.95\textwidth]{../assets/images/ocr_evaluation.png}
+    \includegraphics[width=0.95\textwidth]{ocr_evaluation.png}
     \caption{OCR performance: 200 text regions analyzed. 89\% of regions above 50\% confidence threshold.}
 \end{figure}
 
@@ -230,7 +233,7 @@ Amount & 72\% & 68\% & 70\% \\
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.95\textwidth]{../assets/images/layoutlm_field_extraction.png}
+    \includegraphics[width=0.95\textwidth]{layoutlm_field_extraction.png}
     \caption{Field extraction: ``Total'' achieves highest F1 (86\%), ``Date'' is most reliably detected (83\% F1)}
 \end{figure}
 
@@ -295,7 +298,7 @@ One-Class SVM & 95\% & 91\% & 100\% & 0.958 \\
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.98\textwidth]{../assets/images/anomaly_detection_evaluation.png}
+    \includegraphics[width=0.98\textwidth]{anomaly_detection_evaluation.png}
     \caption{Anomaly detection: ensemble perfectly separates normal (green) from anomaly (red) samples}
 \end{figure}
 

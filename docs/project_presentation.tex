@@ -3,6 +3,10 @@
 \usepackage[utf8]{inputenc}
 \usepackage[margin=1in]{geometry}
 \usepackage{graphicx}
+
+% Image path for Overleaf compatibility
+\graphicspath{{images/}}
+
 \usepackage{hyperref}
 \usepackage{xcolor}
 \usepackage{booktabs}
@@ -76,7 +80,7 @@ Rather than relying on single models, we use \textbf{ensemble methods at every s
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.95\textwidth]{../assets/images/pipeline_summary.png}
+    \includegraphics[width=0.95\textwidth]{pipeline_summary.png}
     \caption{Pipeline evaluation summary: 1,000 receipts processed, 95\% success rate, ensemble improves performance from 78\% to 91\%}
 \end{figure}
 
@@ -112,7 +116,7 @@ where $w_i$ are learned weights calibrated on validation data.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.98\textwidth]{../assets/images/classifier_evaluation.png}
+    \includegraphics[width=0.98\textwidth]{classifier_evaluation.png}
     \caption{Classification ensemble performance: ensemble eliminates all false positives, achieving perfect 100\% accuracy}
 \end{figure}
 
@@ -162,7 +166,7 @@ We use a \textbf{confidence-based cascade}:
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.95\textwidth]{../assets/images/layoutlm_field_extraction.png}
+    \includegraphics[width=0.95\textwidth]{layoutlm_field_extraction.png}
     \caption{Field extraction performance: Total achieves highest F1 (86\%), Date is most reliably detected}
 \end{figure}
 
@@ -221,7 +225,7 @@ The models use 8 engineered features:
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.98\textwidth]{../assets/images/anomaly_detection_evaluation.png}
+    \includegraphics[width=0.98\textwidth]{anomaly_detection_evaluation.png}
     \caption{Anomaly detection: ensemble achieves perfect separation with AUC = 1.000}
 \end{figure}
 
@@ -418,13 +422,13 @@ This project demonstrates how \textbf{ensemble learning} and \textbf{agentic AI}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.95\textwidth]{../assets/images/ocr_evaluation.png}
+    \includegraphics[width=0.95\textwidth]{ocr_evaluation.png}
     \caption{OCR confidence distribution: mean 73.77\%, 89\% of regions above 50\% threshold}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.85\textwidth]{../assets/images/anomaly_model_comparison.png}
+    \includegraphics[width=0.85\textwidth]{anomaly_model_comparison.png}
     \caption{Anomaly detection model comparison: XGBoost and HistGradientBoosting achieve best individual F1 scores (0.86)}
 \end{figure}
 
