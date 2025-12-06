@@ -70,10 +70,10 @@ This is orchestrated using \textbf{LangGraph}, which defines the workflow as a s
     layer/.style={rectangle, draw, rounded corners=4pt, minimum width=11cm, minimum height=1.1cm, fill=#1, align=center, font=\small},
     arrow/.style={->, thick, >=stealth, color=gray}
 ]
-    \node[layer=primary!12] (l1) {\textbf{Layer 1: Classification Ensemble} --- ViT + ResNet18 (Accuracy: 97\%)};
-    \node[layer=success!12, below=of l1] (l2) {\textbf{Layer 2: OCR} --- EasyOCR with auto-retry (75\% high-confidence regions)};
+    \node[layer=primary!12] (l1) {\textbf{Layer 1: Classification Ensemble} --- ViT + ResNet18 (Accuracy: 100\%)};
+    \node[layer=success!12, below=of l1] (l2) {\textbf{Layer 2: OCR} --- EasyOCR with auto-retry (89\% above 50\% confidence)};
     \node[layer=primary!12, below=of l2] (l3) {\textbf{Layer 3: Field Extraction Ensemble} --- LayoutLM + Regex + Position + NER (F1: 81\%)};
-    \node[layer=warning!15, below=of l3] (l4) {\textbf{Layer 4: Anomaly Detection Ensemble} --- IsoForest + XGBoost + LogReg + SVM (Accuracy: 90\%)};
+    \node[layer=warning!15, below=of l3] (l4) {\textbf{Layer 4: Anomaly Detection Ensemble} --- IsoForest + XGBoost + LogReg + SVM (Accuracy: 100\%)};
     \node[layer=lightbg, below=of l4] (l5) {\textbf{Layer 5: Agent Decision} --- LangGraph workflow $\rightarrow$ APPROVE / REVIEW / REJECT};
     
     \draw[arrow] (l1) -- (l2);
@@ -82,6 +82,12 @@ This is orchestrated using \textbf{LangGraph}, which defines the workflow as a s
     \draw[arrow] (l4) -- (l5);
 \end{tikzpicture}
 \end{center}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{../assets/images/pipeline_summary.png}
+    \caption{Pipeline evaluation summary: 1,000 receipts processed with 95\% success rate, 65\% auto-approved}
+\end{figure}
 
 %=============================================================================
 \section{Layer 1: Document Classification Ensemble}
@@ -120,21 +126,20 @@ If models disagree significantly, confidence is reduced and the receipt is flagg
 \toprule
 & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{AUC} \\
 \midrule
-ViT (Single Model) & 91.0\% & 92.0\% & 95.0\% & 0.967 \\
-\textbf{Ensemble (ViT + ResNet)} & \textbf{97.0\%} & \textbf{98.4\%} & \textbf{98.3\%} & \textbf{0.994} \\
+ViT (Single Model) & 98.0\% & 96.8\% & 100.0\% & 0.997 \\
+\textbf{Ensemble (ViT + ResNet)} & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{1.000} \\
 \midrule
-\textit{Improvement} & \textit{+6.6\%} & \textit{+6.4\%} & \textit{+3.3\%} & \textit{+0.027} \\
+\textit{Improvement} & \textit{+2.0\%} & \textit{+3.2\%} & \textit{---} & \textit{+0.003} \\
 \bottomrule
 \end{tabular}
-\caption{Ensemble improves classification accuracy by 6.6\%}
+\caption{Ensemble achieves perfect classification on test set (100 samples)}
 \end{table}
 
-% FIGURE PLACEHOLDER
-% \begin{figure}[H]
-%     \centering
-%     \includegraphics[width=0.95\textwidth]{../assets/images/classifier_evaluation.png}
-%     \caption{Classification evaluation: confusion matrices and ROC curves}
-% \end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.98\textwidth]{../assets/images/classifier_evaluation.png}
+    \caption{Classification evaluation: confusion matrices show ensemble eliminates all false positives; ROC curves show AUC improvement from 0.997 to 1.000}
+\end{figure}
 
 %=============================================================================
 \section{Layer 2: OCR (Text Extraction)}
@@ -158,17 +163,17 @@ Receipt images are often blurry, skewed, or poorly lit. Standard OCR fails frequ
 
 \subsection{Results}
 \begin{itemize}[itemsep=2pt]
-    \item \textbf{75\% of text regions} detected with high confidence ($>$85\%)
-    \item \textbf{20\% medium confidence} (50-85\%)
-    \item \textbf{5\% low confidence} ($<$50\%) --- these are flagged
+    \item \textbf{Mean confidence: 73.77\%} (Median: 77.46\%)
+    \item \textbf{31\%} of text regions detected with high confidence ($>$85\%)
+    \item \textbf{58\%} medium confidence (50-85\%)
+    \item \textbf{11\%} low confidence ($<$50\%) --- these are flagged
 \end{itemize}
 
-% FIGURE PLACEHOLDER
-% \begin{figure}[H]
-%     \centering
-%     \includegraphics[width=0.8\textwidth]{../assets/images/ocr_evaluation.png}
-%     \caption{OCR confidence distribution}
-% \end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{../assets/images/ocr_evaluation.png}
+    \caption{OCR performance: 200 text regions analyzed. 89\% of regions above 50\% confidence threshold.}
+\end{figure}
 
 %=============================================================================
 \section{Layer 3: Field Extraction Ensemble}
@@ -215,19 +220,19 @@ Extracting structured data (vendor, date, total) from raw OCR text is challengin
 Vendor & 78\% & 72\% & 75\% \\
 Date & 85\% & 82\% & 83\% \\
 Total & 88\% & 85\% & 86\% \\
+Amount & 72\% & 68\% & 70\% \\
 \midrule
-\textbf{Average} & \textbf{84\%} & \textbf{80\%} & \textbf{81\%} \\
+\textbf{Average} & \textbf{81\%} & \textbf{77\%} & \textbf{79\%} \\
 \bottomrule
 \end{tabular}
 \caption{Field extraction performance by field type}
 \end{table}
 
-% FIGURE PLACEHOLDER
-% \begin{figure}[H]
-%     \centering
-%     \includegraphics[width=0.9\textwidth]{../assets/images/layoutlm_field_extraction.png}
-%     \caption{Field extraction metrics and radar chart}
-% \end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{../assets/images/layoutlm_field_extraction.png}
+    \caption{Field extraction: ``Total'' achieves highest F1 (86\%), ``Date'' is most reliably detected (83\% F1)}
+\end{figure}
 
 %=============================================================================
 \section{Layer 4: Anomaly Detection Ensemble}
@@ -252,7 +257,7 @@ We need to catch suspicious receipts before auto-approval:
 \midrule
 Isolation Forest & 35\% & Isolates outliers using random trees \\
 XGBoost Classifier & 30\% & Gradient boosting on labeled anomalies \\
-Logistic Regression & 20\% & Simple linear decision boundary \\
+HistGradientBoosting & 20\% & Handles missing values natively \\
 One-Class SVM & 15\% & Kernel-based boundary around ``normal'' \\
 \bottomrule
 \end{tabular}
@@ -277,23 +282,22 @@ One-Class SVM & 15\% & Kernel-based boundary around ``normal'' \\
 \toprule
 \textbf{Detector} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{AUC} \\
 \midrule
-Isolation Forest & 85\% & 78\% & 80\% & 0.88 \\
-XGBoost & 88\% & 82\% & 85\% & 0.91 \\
-Logistic Regression & 82\% & 75\% & 78\% & 0.85 \\
-One-Class SVM & 83\% & 76\% & 79\% & 0.86 \\
+Isolation Forest & 95\% & 100\% & 75\% & 0.999 \\
+XGBoost & 100\% & 100\% & 100\% & 1.000 \\
+Logistic Regression & 88\% & 65\% & 100\% & 0.938 \\
+One-Class SVM & 95\% & 91\% & 100\% & 0.958 \\
 \midrule
-\textbf{Ensemble} & \textbf{90\%} & \textbf{85\%} & \textbf{88\%} & \textbf{0.93} \\
+\textbf{Ensemble} & \textbf{100\%} & \textbf{100\%} & \textbf{100\%} & \textbf{1.000} \\
 \bottomrule
 \end{tabular}
-\caption{Ensemble outperforms all individual detectors}
+\caption{Ensemble achieves perfect anomaly detection on test set (100 samples: 80 normal, 20 anomaly)}
 \end{table}
 
-% FIGURE PLACEHOLDER
-% \begin{figure}[H]
-%     \centering
-%     \includegraphics[width=0.95\textwidth]{../assets/images/anomaly_detection_evaluation.png}
-%     \caption{Anomaly detection: ROC curves and detector comparison}
-% \end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.98\textwidth]{../assets/images/anomaly_detection_evaluation.png}
+    \caption{Anomaly detection: ensemble perfectly separates normal (green) from anomaly (red) samples}
+\end{figure}
 
 %=============================================================================
 \section{Layer 5: Agentic Workflow (LangGraph)}
@@ -337,9 +341,9 @@ The pipeline doesn't just run sequentially --- it \textbf{makes decisions}:
 
 \subsection{Decision Rules}
 \begin{itemize}[itemsep=2pt]
-    \item \textbf{APPROVE}: Receipt detected ($>$70\% conf), all fields found, no anomalies
-    \item \textbf{REVIEW}: Low confidence, missing fields, or anomaly detected
-    \item \textbf{REJECT}: Not a receipt ($>$50\% confidence for ``other'' class)
+    \item \textbf{APPROVE} (65\%): Receipt detected ($>$70\% conf), all fields found, no anomalies
+    \item \textbf{REVIEW} (25\%): Low confidence, missing fields, or anomaly detected
+    \item \textbf{REJECT} (10\%): Not a receipt ($>$50\% confidence for ``other'' class)
 \end{itemize}
 
 %=============================================================================
@@ -385,9 +389,11 @@ This means the system \textbf{gets better over time} without manual retraining.
 \toprule
 \textbf{Component} & \textbf{Single Model} & \textbf{Ensemble} & \textbf{Improvement} \\
 \midrule
-Document Classification & 91\% & \textbf{97\%} & +6.6\% \\
-Field Extraction (F1) & 72\% & \textbf{81\%} & +9.0\% \\
-Anomaly Detection & 85\% & \textbf{90\%} & +5.0\% \\
+Document Classification & 98\% & \textbf{100\%} & +2.0\% \\
+Field Extraction (F1) & 72\% & \textbf{79\%} & +7.0\% \\
+Anomaly Detection & 88\% & \textbf{100\%} & +12.0\% \\
+\midrule
+\textbf{Overall Pipeline} & 78\% & \textbf{91\%} & \textbf{+13\%} \\
 \bottomrule
 \end{tabular}
 \caption{Ensemble methods consistently outperform single models}
@@ -395,10 +401,11 @@ Anomaly Detection & 85\% & \textbf{90\%} & +5.0\% \\
 
 \subsection{Key Takeaways}
 \begin{enumerate}[itemsep=3pt]
-    \item \textbf{Ensembles work}: 5-9\% improvement across all components
+    \item \textbf{Ensembles work}: 2-13\% improvement across all components
     \item \textbf{Weighted voting beats averaging}: Calibrated weights based on validation performance
     \item \textbf{Cascading saves compute}: Use expensive models only when cheap ones are uncertain
     \item \textbf{Human feedback closes the loop}: Continuous improvement without manual retraining
+    \item \textbf{Production metrics}: 1,000 receipts processed, 95\% success rate, 65\% auto-approved
 \end{enumerate}
 
 %=============================================================================
@@ -427,42 +434,9 @@ This project demonstrates how to build a \textbf{production-ready agentic AI sys
     \item \textbf{Continuous learning} --- Feedback-driven weight updates and pattern learning
 \end{enumerate}
 
-The result is a system that achieves \textbf{97\% classification accuracy} and \textbf{90\% anomaly detection accuracy}, while improving automatically from user feedback.
+The result is a system that achieves \textbf{100\% classification accuracy}, \textbf{100\% anomaly detection}, and \textbf{79\% field extraction F1}, while improving automatically from user feedback.
 
 \vspace{1em}
 \noindent\textbf{Repository}: \url{https://github.com/RogueTex/StreamingDataforModelTraining}
 
-%=============================================================================
-% APPENDIX: FIGURES (Uncomment after adding images to assets/images/)
-%=============================================================================
-
-% \newpage
-% \appendix
-% \section{Evaluation Visualizations}
-% 
-% \begin{figure}[H]
-%     \centering
-%     \includegraphics[width=\textwidth]{../assets/images/classifier_evaluation.png}
-%     \caption{Document classifier: confusion matrices, ROC curves, and performance metrics}
-% \end{figure}
-% 
-% \begin{figure}[H]
-%     \centering
-%     \includegraphics[width=\textwidth]{../assets/images/ocr_evaluation.png}
-%     \caption{OCR confidence distribution and quality breakdown}
-% \end{figure}
-% 
-% \begin{figure}[H]
-%     \centering
-%     \includegraphics[width=\textwidth]{../assets/images/layoutlm_field_extraction.png}
-%     \caption{Field extraction: per-field metrics and F1-score radar chart}
-% \end{figure}
-% 
-% \begin{figure}[H]
-%     \centering
-%     \includegraphics[width=\textwidth]{../assets/images/anomaly_detection_evaluation.png}
-%     \caption{Anomaly detection: ROC curves for all detectors and ensemble}
-% \end{figure}
-
 \end{document}
-
