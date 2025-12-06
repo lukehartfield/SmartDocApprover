@@ -40,13 +40,15 @@ logs/
 *.tmp
 *.temp
 
-# Documentation (LaTeX source files)
-docs/*.tex
+# Documentation (LaTeX build artifacts only)
+# Keep .tex source files for version control
 docs/*.aux
 docs/*.log
 docs/*.out
 docs/*.toc
-docs/*.pdf
+docs/*.synctex.gz
+docs/*.fls
+docs/*.fdb_latexmk
 
 # Local fix/helper files (not for repo)
 RESNET_ENSEMBLE_FIX.md
