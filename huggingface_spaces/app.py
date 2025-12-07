@@ -19,6 +19,84 @@ from sklearn.ensemble import IsolationForest
 import warnings
 warnings.filterwarnings('ignore')
 
+# ---------------------------------------------------------------------------
+# Work around Gradio json_schema traversal crash:
+# - guard bool schema entries
+# ---------------------------------------------------------------------------
+import gradio_client.utils as grc_utils
+_orig_get_type = grc_utils.get_type
+_orig_json_schema_to_python_type = grc_utils.json_schema_to_python_type
+
+
+def _safe_get_type(schema):
+    if isinstance(schema, bool):
+        return "any"
+    return _orig_get_type(schema)
+
+
+def _safe_json_schema_to_python_type(schema, defs=None):
+    if isinstance(schema, bool):
+        return "any"
+    try:
+        return _orig_json_schema_to_python_type(schema, defs)
+    except Exception:
+        return "any"
+
+
+grc_utils.get_type = _safe_get_type
+grc_utils.json_schema_to_python_type = _safe_json_schema_to_python_type
+
+# ---------------------------------------------------------------------------
+# JSON sanitation helper (convert numpy types & PIL-friendly outputs)
+# ---------------------------------------------------------------------------
+def to_jsonable(obj):
+    if isinstance(obj, dict):
+        return {k: to_jsonable(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [to_jsonable(v) for v in obj]
+    if isinstance(obj, (np.bool_, bool)):
+        return bool(obj)
+    if isinstance(obj, (np.integer,)):
+        return int(obj)
+    if isinstance(obj, (np.floating,)):
+        return float(obj)
+    if isinstance(obj, np.ndarray):
+        return obj.tolist()
+    if isinstance(obj, Image.Image):
+        return None
+    return obj
+
+# ---------------------------------------------------------------------------
+# Feedback persistence helper (CSV; optionally include section label)
+# ---------------------------------------------------------------------------
+def save_feedback(assessment, notes, results_json_str, section="overall"):
+    try:
+        parsed = json.loads(results_json_str) if results_json_str else {}
+    except Exception:
+        parsed = {"raw": results_json_str}
+    entry = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "section": section or "",
+        "assessment": assessment or "",
+        "notes": notes or "",
+        "results": parsed,
+    }
+    import csv
+    fieldnames = ["timestamp", "section", "assessment", "notes", "results"]
+    file_exists = os.path.exists("feedback_logs.csv")
+    with open("feedback_logs.csv", "a", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        if not file_exists:
+            writer.writeheader()
+        writer.writerow({
+            "timestamp": entry["timestamp"],
+            "section": entry.get("section", ""),
+            "assessment": entry["assessment"],
+            "notes": entry["notes"],
+            "results": json.dumps(entry["results"]),
+        })
+    return "✅ Feedback saved. (Stored in feedback_logs.csv)"
+
 # ============================================================================
 # Configuration
 # ============================================================================
@@ -505,7 +583,7 @@ def process_receipt(image):
     if image is None:
         return (
             "<div style='padding: 20px; text-align: center;'>Upload an image to begin</div>",
-            None, "", "", ""
+            None, "", ""
         )
     
     if not isinstance(image, Image.Image):
@@ -528,12 +606,12 @@ def process_receipt(image):
         bar_color = '#28a745' if conf > 0.8 else '#ffc107' if conf > 0.6 else '#dc3545'
         
         classifier_html = f"""
-        <div style="padding: 16px; background: #f8f9fa; border-radius: 12px; margin: 8px 0;">
-            <h4 style="margin: 0 0 8px 0;">Classification</h4>
+        <div style="padding: 16px; background: #111827; color: #e5e7eb; border-radius: 12px; margin: 8px 0; border: 1px solid #1f2937;">
+            <h4 style="margin: 0 0 8px 0; color: #e5e7eb;">Classification</h4>
             <div style="font-size: 20px; font-weight: bold; color: {color};">{label}</div>
-            <div style="margin-top: 8px;">
+            <div style="margin-top: 8px; color: #e5e7eb;">
                 <span>Confidence: </span>
-                <div style="display: inline-block; width: 100px; height: 8px; background: #e9ecef; border-radius: 4px;">
+                <div style="display: inline-block; width: 100px; height: 8px; background: #1f2937; border-radius: 4px;">
                     <div style="width: {conf*100}%; height: 100%; background: {bar_color}; border-radius: 4px;"></div>
                 </div>
                 <span style="margin-left: 8px;">{conf:.1%}</span>
@@ -566,12 +644,12 @@ def process_receipt(image):
         if receipt_ocr and ocr_results:
             fields = receipt_ocr.postprocess_receipt(ocr_results)
         
-        fields_html = "<div style='padding: 16px; background: #f8f9fa; border-radius: 12px;'><h4>Extracted Fields</h4>"
+        fields_html = "<div style='padding: 16px; background: #111827; color: #e5e7eb; border-radius: 12px; border: 1px solid #1f2937;'><h4 style=\"color: #e5e7eb;\">Extracted Fields</h4>"
         for name, value in [('Vendor', fields.get('vendor')), ('Date', fields.get('date')), 
                            ('Total', f"${fields.get('total')}" if fields.get('total') else None),
                            ('Time', fields.get('time'))]:
-            display = value or '<span style="color: #adb5bd;">Not found</span>'
-            fields_html += f"<div style='padding: 8px; background: white; border-radius: 6px; margin: 4px 0;'><b>{name}:</b> {display}</div>"
+            display = value or '<span style="color: #9ca3af;">Not found</span>'
+            fields_html += f"<div style='padding: 8px; background: #0f172a; color: #e5e7eb; border: 1px solid #1f2937; border-radius: 6px; margin: 4px 0;'><b>{name}:</b> {display}</div>"
         fields_html += "</div>"
         results['fields'] = fields
     except Exception as e:
@@ -585,8 +663,8 @@ def process_receipt(image):
         status_text = anomaly_result['prediction']
         
         anomaly_html = f"""
-        <div style="padding: 16px; background: #f8f9fa; border-radius: 12px; margin: 8px 0;">
-            <h4 style="margin: 0 0 8px 0;">Anomaly Detection</h4>
+        <div style="padding: 16px; background: #111827; color: #e5e7eb; border-radius: 12px; margin: 8px 0; border: 1px solid #1f2937;">
+            <h4 style="margin: 0 0 8px 0; color: #e5e7eb;">Anomaly Detection</h4>
             <div style="font-size: 18px; font-weight: bold; color: {status_color};">{status_text}</div>
         """
         if anomaly_result['reasons']:
@@ -632,7 +710,7 @@ def process_receipt(image):
     {fields_html}
     """
     
-    return summary_html, ocr_image, ocr_text, "", json.dumps(results, indent=2)
+    return summary_html, ocr_image, ocr_text, json.dumps(to_jsonable(results), indent=2)
 
 
 # ============================================================================
@@ -640,9 +718,16 @@ def process_receipt(image):
 # ============================================================================
 
 CUSTOM_CSS = """
-.gradio-container { max-width: 1200px !important; }
-.main-header { text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-               border-radius: 12px; color: white; margin-bottom: 20px; }
+.gradio-container { max-width: 1200px !important; background: #0b0c0e; color: #e5e7eb; }
+.main-header { text-align: center; padding: 20px; background: linear-gradient(135deg, #0f172a 0%, #1f2937 100%); 
+               border-radius: 12px; color: #e5e7eb; margin-bottom: 20px; border: 1px solid #1f2937; }
+.gr-button { border-radius: 10px; background: #111827; color: #e5e7eb; border: 1px solid #1f2937; }
+.gr-button-primary { background: #111827; border: 1px solid #22c55e; color: #e5e7eb; }
+.gr-box { border: 1px solid #1f2937; background: #111827; color: #e5e7eb; }
+.gradio-accordion { border: 1px solid #1f2937 !important; background: #0f172a !important; color: #e5e7eb !important; }
+.gr-markdown { color: #e5e7eb; }
+.gr-textbox textarea { background: #0f172a !important; color: #e5e7eb !important; border: 1px solid #1f2937 !important; }
+.gr-radio { color: #e5e7eb !important; }
 """
 
 with gr.Blocks(title="Receipt Processing Agent", theme=gr.themes.Soft(), css=CUSTOM_CSS) as demo:
@@ -684,13 +769,77 @@ with gr.Blocks(title="Receipt Processing Agent", theme=gr.themes.Soft(), css=CUS
     
     with gr.Accordion("Raw Results (JSON)", open=False):
         results_json = gr.Textbox(label="Full Results", lines=15)
-    
-    hidden_state = gr.Textbox(visible=False)
-    
+
+    with gr.Accordion("Classification Feedback", open=False):
+        cls_assess = gr.Radio(choices=["Correct", "Incorrect"], label="Classification correct?", value=None)
+        cls_notes = gr.Textbox(label="Notes (optional)", placeholder="What should be improved or fixed?", lines=2)
+        cls_status = gr.Markdown(value="")
+        cls_submit = gr.Button("Submit Classification Feedback", variant="primary")
+        cls_submit.click(
+            fn=save_feedback,
+            inputs=[cls_assess, cls_notes, results_json, gr.State("classification")],
+            outputs=cls_status
+        )
+
+    with gr.Accordion("OCR Feedback", open=False):
+        ocr_assess = gr.Radio(choices=["Correct", "Incorrect"], label="OCR correct?", value=None)
+        ocr_notes = gr.Textbox(label="Notes (optional)", placeholder="What should be improved or fixed?", lines=2)
+        ocr_status = gr.Markdown(value="")
+        ocr_submit = gr.Button("Submit OCR Feedback", variant="primary")
+        ocr_submit.click(
+            fn=save_feedback,
+            inputs=[ocr_assess, ocr_notes, results_json, gr.State("ocr")],
+            outputs=ocr_status
+        )
+
+    with gr.Accordion("Field Extraction Feedback", open=False):
+        fld_assess = gr.Radio(choices=["Correct", "Incorrect"], label="Fields correct?", value=None)
+        fld_notes = gr.Textbox(label="Notes (optional)", placeholder="What should be improved or fixed?", lines=2)
+        fld_status = gr.Markdown(value="")
+        fld_submit = gr.Button("Submit Fields Feedback", variant="primary")
+        fld_submit.click(
+            fn=save_feedback,
+            inputs=[fld_assess, fld_notes, results_json, gr.State("fields")],
+            outputs=fld_status
+        )
+
+    with gr.Accordion("Anomaly Feedback", open=False):
+        an_assess = gr.Radio(choices=["Correct", "Incorrect"], label="Anomaly correct?", value=None)
+        an_notes = gr.Textbox(label="Notes (optional)", placeholder="What should be improved or fixed?", lines=2)
+        an_status = gr.Markdown(value="")
+        an_submit = gr.Button("Submit Anomaly Feedback", variant="primary")
+        an_submit.click(
+            fn=save_feedback,
+            inputs=[an_assess, an_notes, results_json, gr.State("anomaly")],
+            outputs=an_status
+        )
+
+    with gr.Accordion("Feedback", open=True):
+        gr.Markdown("Review the agent output below and submit a quick assessment.")
+        with gr.Row():
+            feedback_assessment = gr.Radio(
+                choices=["Correct", "Incorrect"],
+                label="Is the response correct?",
+                value=None
+            )
+            feedback_notes = gr.Textbox(
+                label="Notes (optional)",
+                placeholder="What should be improved or fixed?",
+                lines=3
+            )
+        feedback_status = gr.Markdown(value="")
+        submit_feedback = gr.Button("Submit Feedback", variant="primary")
+
     process_btn.click(
         fn=process_receipt,
         inputs=[input_image],
-        outputs=[agent_summary, ocr_image_output, ocr_text_output, hidden_state, results_json]
+        outputs=[agent_summary, ocr_image_output, ocr_text_output, results_json]
+    )
+    
+    submit_feedback.click(
+        fn=save_feedback,
+        inputs=[feedback_assessment, feedback_notes, results_json, gr.State("overall")],
+        outputs=feedback_status
     )
     
     gr.Markdown("""
@@ -708,7 +857,12 @@ with gr.Blocks(title="Receipt Processing Agent", theme=gr.themes.Soft(), css=CUS
     """)
 
 
-# Launch
+# Launch (Spaces needs share=True when localhost is blocked)
 if __name__ == "__main__":
-    demo.launch()
+    demo.queue(max_size=8).launch(
+        share=True,
+        server_name="0.0.0.0",
+        server_port=7860,
+        show_error=True,
+    )
 
