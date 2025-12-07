@@ -735,6 +735,12 @@ with gr.Blocks(title="Receipt Processing Agent", theme=gr.themes.Soft(), css=CUS
     <div class="main-header">
         <h1>Receipt Processing Agent</h1>
         <p>Ensemble classification, OCR, field extraction, and anomaly detection</p>
+        <p style="margin-top: 8px; font-weight: 600;">Built by Emily, John, Luke, Michael and Raghu.</p>
+        <p style="margin-top: 4px;">
+            <a href="https://github.com/RogueTex/StreamingDataforModelTraining/blob/main/README.md" target="_blank" style="color: #22c55e; text-decoration: none;">
+                Read more in the GitHub README
+            </a>
+        </p>
     </div>
     """)
     
