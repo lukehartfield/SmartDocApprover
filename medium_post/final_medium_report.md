@@ -16,7 +16,10 @@ We built an end-to-end, agentic receipt-processing system that:
   - Detects suspicious receipts with an anomaly ensemble
   - Routes documents to approve / review / reject using a LangGraph workflow
   - Learns from human corrections via a Gradio UI
+
+
 Try it: [Hugging Face Spaces demo](https://huggingface.co/spaces/Rogue2003/Receipt_Agent) and full repo links below.
+
 
 ---
 
