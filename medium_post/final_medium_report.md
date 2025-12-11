@@ -27,19 +27,20 @@ The stakes are real: bad approvals waste money; slow reviews frustrate teams. Re
 ---
 
 ## Data Collection & Description
-- **Sources:** Real document datasets (RVL-CDIP for classification pretrain/fine-tune; SROIE and CORD for receipts and field annotations) plus synthetic receipts (varied vendors, currencies, lighting, skew, handwriting) and a 100-receipt held-out set that mimics real scenarios for quick iteration.
-- **Signals:** Eight anomaly features (amount, log_amount, vendor length, date validity, item count, hour, amount per item, weekend); OCR tokens + boxes for LayoutLMv3; raw images for ViT/ResNet and multi-OCR.
-- **Feedback loop:** The Gradio app captures reviewer corrections; those updates feed regex/NER/vendor patterns and anomaly labels.
+- **Sources:** Real document datasets (RVL-CDIP for classification pretrain/fine-tune; SROIE and CORD for receipts and field annotations) plus synthetic receipts (varied vendors, currencies, lighting, skew, handwriting) and a 100-receipt held-out set to approximate real intake. RVL-CDIP gives visual breadth; SROIE/CORD give labeled receipt structure; synthetics stress weird fonts, crops, and lighting.
+- **Signals:** Eight anomaly features (amount, log_amount, vendor length, date validity, item count, hour, amount per item, weekend); OCR tokens + boxes for LayoutLMv3; raw images for ViT/ResNet and multi-OCR. These cover numbers, text, layout, and timing so no single signal dominates.
+- **Feedback loop:** The Gradio app captures reviewer corrections; those updates feed regex/NER/vendor patterns and anomaly labels, so the same edge case is easier the next time.
 
 ### Pre-Processing & Exploration
-- Image cleanup: resize, denoise, deskew when OCR confidence drops; normalize to RGB.
-- OCR normalization: merge overlapping boxes (IoU>0.5), lowercase/strip tokens, normalize dates/amounts.
-- Synthetic validation: spot-check skew/lighting/handwritten variants before training to ensure coverage.
+- Image cleanup: resize, denoise, deskew when OCR confidence drops; normalize to RGB for consistent inputs across OCR engines.
+- OCR normalization: merge overlapping boxes (IoU>0.5), lowercase/strip tokens, normalize dates/amounts so downstream regex/NER see consistent text.
+- Synthetic validation: spot-check skew/lighting/handwritten variants before training to ensure the data covers the ugly cases we care about.
+- Outcome: cleaner text/layout signals, fewer brittle misses, and faster downstream convergence.
 
 ---
 
 ## System Overview: An Agentic Multi-Model Pipeline
-Instead of a brittle linear flow, we run a **stateful LangGraph** with shared state, retries, and conditional routing:
+Rather than a brittle linear flow, we run a **stateful LangGraph** with shared state, retries, and conditional routing. Each node reads/writes the same state object; the graph decides what to do next based on confidence and previous results:
 ```
 [INGEST] → [CLASSIFY] → [OCR] → [EXTRACT] → [ANOMALY] → [ROUTE]
 ```
@@ -58,6 +59,7 @@ The graphic below shows the ensemble approach we use to solve the problem end to
 ![Ensemble outlook](https://raw.githubusercontent.com/RogueTex/StreamingDataforModelTraining/main/assets/images/Ensemble_Outlook.png)
 
 ### The Four Ensembles!
+We stack four layers so each stage is robust on its own and hands richer signals to the next. No single weak model can derail the pipeline.
 1) **Document Classification (ViT + ResNet + stacking)**  
    - Global layout + texture cues; meta-learner balances them.  
    - Outcome: **98%** accuracy on single models; the ensemble gates to 100% on our validation/test set, ensuring only receipts flow downstream.
