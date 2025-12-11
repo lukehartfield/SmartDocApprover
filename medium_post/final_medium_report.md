@@ -74,7 +74,7 @@ We layer four decisions to stay robust: classification filters out non-receipts;
 
 4) **Anomaly Detection (Isolation Forest + XGBoost + HistGB + One-Class SVM)**  
    - Weighted average + majority vote (≥2 of 4 must flag).  
-   - Outcome: **98.0%** accuracy, F1 **0.98**, AUC **0.99**.  
+   - Outcome: **98.0%** accuracy, F1 **0.98**, AUC **0.99**; the final ensemble flagged essentially all anomalies in our test set.
    ![Anomaly evaluation — ensemble bumps AUC vs individual models](https://raw.githubusercontent.com/RogueTex/StreamingDataforModelTraining/main/assets/images/anomaly_detection_evaluation.png)  
 
 We run anomaly detection to catch outliers, missing fields, and suspicious patterns before anything is auto-approved. Examples we flag:
