@@ -40,7 +40,7 @@ The stakes are real: bad approvals waste money; slow reviews frustrate teams. Re
 ---
 
 ## System Overview: An Agentic Multi-Model Pipeline
-At a high level, every document passes through six stages. First, a document classification ensemble determines whether the input is actually a receipt; only receipts move forward. Second, OCR turns pixels into text, capturing strings and bounding boxes. Third, a four-way ensemble extracts structured fields (vendor, date, total, amount). Fourth, an anomaly ensemble evaluates whether the transaction looks suspicious based on engineered features. Fifth, a LangGraph workflow aggregates outputs and makes an approve/review/reject decision. Finally, when humans correct predictions, a feedback loop uses those corrections to fine-tune patterns and re-weight ensembles over time.
+Every document moves through six agentic steps: (1) a classification ensemble gates out non-receipts; (2) OCR converts pixels to text with boxes; (3) a four-way extractor (LayoutLM + regex + position + NER) pulls vendor/date/total/amount; (4) an anomaly ensemble checks for suspicious or incomplete receipts; (5) a LangGraph workflow aggregates signals to approve/review/reject; and (6) a feedback loop folds human corrections back into patterns and weights so the next pass is smarter.
 
 
 
