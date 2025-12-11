@@ -10,7 +10,7 @@
 ## TL;DR
 - **Goal:** Approve/review/reject receipts with speed and confidence.
 - **Approach:** Four ensembles (classification, OCR, field extraction, anomaly detection) orchestrated by a **LangGraph agent** that retries, routes, and listens to human feedback.
-- **Data:** Synthetic receipts plus a 100-receipt held-out set; feedback data captured in the Gradio app.
+- **Data:** 400k business document images, synthetic receipts, and a 100-receipt held-out set; feedback data captured in the Gradio app.
 - **Results:** 98% doc classification, 99.08% field extraction, ~75% OCR confidence, 98% anomaly F1/AUC; ensemble beats best single model by ~9%.
 - **Try it:** [Hugging Face Spaces demo](https://huggingface.co/spaces/Rogue2003/Receipt_Agent) and full repo links below.
 
