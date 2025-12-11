@@ -48,10 +48,12 @@ Instead of a brittle linear flow, we run a **stateful LangGraph** with shared st
 - **Shared state:** Carries image, OCR results, extracted fields, anomaly score, decision, and a processing log for explainability.
 - **Feedback-aware:** Every few corrections triggers updates to patterns, thresholds, and ensemble weights.
 
-![Ensemble outlook](https://raw.githubusercontent.com/RogueTex/StreamingDataforModelTraining/main/assets/images/Ensemble_Outlook.png)
+
 
 ## Ensemble Outlook
-We layer four decisions to stay robust: classification filters out non-receipts; OCR turns pixels into text; field extraction pulls vendor/date/total with layout-aware cues; anomaly detection flags suspicious or incomplete receipts before approval. Each layer votes within itself, then hands richer signals to the next, so no single weak step breaks the pipeline.
+We layer four decisions to stay robust: classification filters out non-receipts; OCR turns pixels into text; field extraction pulls vendor/date/total with layout-aware cues; anomaly detection flags suspicious or incomplete receipts before approval. Each layer votes within itself, then hands richer signals to the next, so no single weak step breaks the pipeline. The graphic below shows the ensemble approach we use to solve the problem end to end.
+
+![Ensemble outlook](https://raw.githubusercontent.com/RogueTex/StreamingDataforModelTraining/main/assets/images/Ensemble_Outlook.png)
 
 ### The Four Ensembles!
 1) **Document Classification (ViT + ResNet + stacking)**  
@@ -196,7 +198,7 @@ result = workflow.invoke({"image": uploaded_bytes})
 
 ---
 
-## Lessons Learned
+## Key Outcomes
 - **Ensembles beat single models** across classification, extraction, and anomaly detection.
 - **Confidence and agreement matter:** weighting + majority votes reduce false positives without missing true anomalies.
 - **Agentic orchestration** (routing + retries) matters as much as model choice.
