@@ -5,7 +5,7 @@
 
 > We set out to keep expense approvals fast and honest: separate receipts from noise, pull out the fields that matter, and flag the weird ones without drowning reviewers.
 
-![Pipeline summary](https://raw.githubusercontent.com/RogueTex/StreamingDataforModelTraining/main/assets/images/pipeline_summary.png)
+![Pipeline summary](https://raw.githubusercontent.com/RogueTex/StreamingDataforModelTraining/main/assets/images/header_image.png)
 
 ## TL;DR
 - **Goal:** Approve/review/reject receipts with speed and confidence.
