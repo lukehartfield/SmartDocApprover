@@ -27,7 +27,7 @@ The stakes are real: bad approvals waste money; slow reviews frustrate teams. Re
 ---
 
 ## Data Collection & Description
-- **Sources:** Synthetic receipts (varied vendors, currencies, lighting, skew, handwriting) plus a 100-receipt held-out set that mimics real scenarios for quick iteration.
+- **Sources:** Real document datasets (RVL-CDIP for classification pretrain/fine-tune; SROIE and CORD for receipts and field annotations) plus synthetic receipts (varied vendors, currencies, lighting, skew, handwriting) and a 100-receipt held-out set that mimics real scenarios for quick iteration.
 - **Signals:** Eight anomaly features (amount, log_amount, vendor length, date validity, item count, hour, amount per item, weekend); OCR tokens + boxes for LayoutLMv3; raw images for ViT/ResNet and multi-OCR.
 - **Feedback loop:** The Gradio app captures reviewer corrections; those updates feed regex/NER/vendor patterns and anomaly labels.
 
@@ -73,6 +73,13 @@ Instead of a brittle linear flow, we run a **stateful LangGraph** with shared st
 
 ### Inside Each Ensemble
 For classification, we blend ViT-Tiny (LoRA-finetuned for global layout), a fine-tuned ViT-10k, and ResNet18 for texture, then stack them with XGBoost so a meta-learner can trust the right signals. OCR combines EasyOCR, TrOCR (fine-tuned on receipts), PaddleOCR, and Tesseract, leaning on weighted voting because each engine fails on different fonts and angles. Field extraction mixes LayoutLMv3 (fine-tuned), regex for dates/amounts, positional heuristics for common layouts, and NER for vendors, weighted 35/25/20/20 with a 1.2× agreement bonus to reward consensus. Anomalies use Isolation Forest (outliers), XGBoost (supervised patterns), HistGradientBoosting (robust to missingness), and One-Class SVM (boundary), with a weighted vote plus a majority gate to avoid lone-model vetoes.
+
+### Fine-Tuning & Search (How We Made Them Work)
+- **LoRA on vision models:** Used for ViT-Tiny (classification) and LayoutLMv3 (extraction) to keep tuning lightweight—~0.1% of parameters trained, faster convergence, less overfit to receipts.
+- **TrOCR fine-tune:** We fine-tuned TrOCR on receipt-like text to handle tough fonts/angles; combined via weighted voting so it boosts, not breaks, OCR.
+- **Optuna + LR Finder:** Searched LR/weight decay/warmup with Optuna, then confirmed stable starts with a quick LR range test before long runs.
+- **Stacking/weights learned on val:** XGBoost meta-learner and ensemble weights were calibrated on validation splits to trust the right model per case.
+- **Confidence gates and retries:** OCR retries with enhancement if confidence < 0.7; extraction uses agreement bonuses to reward consensus and avoid lone-model drift.
 
 ### Why We Ensemble
 Receipts are messy and diverse—fonts, crops, lighting, vendors, and handwritten quirks all vary. No single model wins everywhere, so we use voting and confidence-weighted fusion to raise the floor and avoid brittle failures. Agreement bonuses and majority gates prevent a lone bad call, while stacking learns which signals to trust for each case.
