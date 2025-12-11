@@ -57,6 +57,7 @@ Instead of a brittle linear flow, we run a **stateful LangGraph** with shared st
    - Group by overlapping boxes, vote by confidence.  
    - Outcome: ~**75%** average confidence on tough receipts.  
    ![OCR evaluation — fusion lifts confidence on skewed/low-light receipts](https://raw.githubusercontent.com/RogueTex/StreamingDataforModelTraining/main/assets/images/ocr_evaluation.png)
+   ![OCR + LayoutLM demonstration](https://raw.githubusercontent.com/RogueTex/StreamingDataforModelTraining/main/assets/images/OCR_plus_LayoutLMdemonstrationSumamry.png)
 
 3) **Field Extraction (LayoutLMv3 + Regex + Position + NER)**  
    - Weights 35/25/20/20 with a 1.2× agreement bonus.  
@@ -86,6 +87,7 @@ Receipts are messy and diverse—fonts, crops, lighting, vendors, and handwritte
 | OCR | ~75% avg confidence |
 | Anomaly Detection | 98.0% accuracy, F1 0.98, AUC 0.99 |
 | Ensemble Benefit | ~+9% vs. best single model |
+![End-to-end results summary](https://raw.githubusercontent.com/RogueTex/StreamingDataforModelTraining/main/assets/images/AGENTIC_WORFLOW_FINAL_RESULT_SUMMARY.png)
 
 ### Failure Cases We Saw
 - Handwritten totals and logo-only vendors with little text.
@@ -108,6 +110,8 @@ Receipts are messy and diverse—fonts, crops, lighting, vendors, and handwritte
 ---
 
 ## What Makes It “Agentic”
+![Agentic workflow](https://raw.githubusercontent.com/RogueTex/StreamingDataforModelTraining/main/assets/images/agentic_Workflow.png)
+![Agentic workflow (full view)](https://raw.githubusercontent.com/RogueTex/StreamingDataforModelTraining/main/assets/images/Agentic_full_worfklow_result_2.png)
 - **Adaptive:** Retries with enhanced images; conditional skips for non-receipts.
 - **Stateful:** Decisions consider classification, OCR confidence, and anomalies together.
 - **Feedback-aware:** Human corrections update vendors, date formats, anomaly labels, and ensemble weights.
