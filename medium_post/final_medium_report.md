@@ -89,7 +89,7 @@ We run anomaly detection to catch outliers, missing fields, and suspicious patte
 ### Inside Each Ensemble
 For classification, we blend ViT-Tiny (LoRA-finetuned for global layout), a fine-tuned ViT-10k, and ResNet18 for texture, then stack them with XGBoost so a meta-learner can trust the right signals. OCR combines EasyOCR, TrOCR (fine-tuned on receipts), PaddleOCR, and Tesseract, leaning on weighted voting because each engine fails on different fonts and angles. Field extraction mixes LayoutLMv3 (fine-tuned), regex for dates/amounts, positional heuristics for common layouts, and NER for vendors, weighted 35/25/20/20 with a 1.2× agreement bonus to reward consensus. Anomalies use Isolation Forest (outliers), XGBoost (supervised patterns), HistGradientBoosting (robust to missingness), and One-Class SVM (boundary), with a weighted vote plus a majority gate to avoid lone-model vetoes.
 
-### Fine-Tuning & Search (How We Made Them Work)
+### Fine-Tuning & Search for better results!
 - **LoRA on vision models:** Used for ViT-Tiny (classification) and LayoutLMv3 (extraction) to keep tuning lightweight—~0.1% of parameters trained, faster convergence, less overfit to receipts.
 - **TrOCR fine-tune:** We fine-tuned TrOCR on receipt-like text to handle tough fonts/angles; combined via weighted voting so it boosts, not breaks, OCR.
 - **Optuna + LR Finder:** Searched LR/weight decay/warmup with Optuna, then confirmed stable starts with a quick LR range test before long runs.
@@ -202,7 +202,9 @@ result = workflow.invoke({"image": uploaded_bytes})
 - **Human feedback closes the loop** without constant full retrains.
 
 ## Conclusion and Next Steps
-This agentic, feedback-aware stack keeps receipt decisions fast, explainable, and resilient to messy inputs—exactly what we set out to deliver for Dr. Ghosh’s Advanced Machine Learning course (Fall ’25). Thank you, Dr. Ghosh, for your guidance throughout the semester. Next up: stronger multilingual OCR, richer anomaly features (frequency drift, geo/time coherence), and per-customer threshold auto-tuning.
+This agentic, feedback-aware stack keeps receipt decisions fast, explainable, and resilient to messy inputs—exactly what we set out to deliver for Dr. Ghosh’s Advanced Machine Learning course (Fall ’25). 
+
+Thank you, Dr. Ghosh, for your guidance throughout the semester. Next up: stronger multilingual OCR, richer anomaly features (frequency drift, geo/time coherence), and per-customer threshold auto-tuning.
 
 ---
 
