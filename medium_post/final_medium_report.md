@@ -1,4 +1,4 @@
-# Smart Doc Approver: Building an Agentic Receipt Pipeline That Actually Works
+# Smart Doc Approver: Building an Agentic Receipt Pipeline That Actually Works!
 
 *By Emily Caraher, Luke Hartfield, John MacDonald, Michael Ovassapian, Raghu Subramanian*  
 *MIS 382N — Advanced Machine Learning | Dr. Joydeep Ghosh*
@@ -51,7 +51,9 @@ Instead of a brittle linear flow, we run a **stateful LangGraph** with shared st
 
 
 ## Ensemble Outlook
-We layer four decisions to stay robust: classification filters out non-receipts; OCR turns pixels into text; field extraction pulls vendor/date/total with layout-aware cues; anomaly detection flags suspicious or incomplete receipts before approval. Each layer votes within itself, then hands richer signals to the next, so no single weak step breaks the pipeline. The graphic below shows the ensemble approach we use to solve the problem end to end.
+We layer four decisions to stay robust: classification filters out non-receipts; OCR turns pixels into text; field extraction pulls vendor/date/total with layout-aware cues; anomaly detection flags suspicious or incomplete receipts before approval. Each layer votes within itself, then hands richer signals to the next, so no single weak step breaks the pipeline. 
+
+The graphic below shows the ensemble approach we use to solve the problem end to end.
 
 ![Ensemble outlook](https://raw.githubusercontent.com/RogueTex/StreamingDataforModelTraining/main/assets/images/Ensemble_Outlook.png)
 
@@ -65,6 +67,7 @@ We layer four decisions to stay robust: classification filters out non-receipts;
    - Group by overlapping boxes, vote by confidence.  
    - Outcome: ~**75%** average confidence on tough receipts.  
    ![OCR evaluation — fusion lifts confidence on skewed/low-light receipts](https://raw.githubusercontent.com/RogueTex/StreamingDataforModelTraining/main/assets/images/ocr_evaluation.png)
+   Shown below is OCR extraction on a sample receipt; fields are overlaid with color-coded boxes by confidence to highlight what the ensemble trusts most.
    ![OCR + LayoutLM demonstration](https://raw.githubusercontent.com/RogueTex/StreamingDataforModelTraining/main/assets/images/OCR_plus_LayoutLMdemonstrationSumamry.png)
 
 3) **Field Extraction (LayoutLMv3 + Regex + Position + NER)**  
@@ -112,6 +115,7 @@ Receipts are messy and diverse—fonts, crops, lighting, vendors, and handwritte
 | OCR | ~75% avg confidence |
 | Anomaly Detection | 98.0% accuracy, F1 0.98, AUC 0.99 |
 | Ensemble Benefit | ~+9% vs. best single model |
+
 ![End-to-end results summary](https://raw.githubusercontent.com/RogueTex/StreamingDataforModelTraining/main/assets/images/AGENTIC_WORFLOW_FINAL_RESULT_SUMMARY.png)
 
 ### Failure Cases We Saw
