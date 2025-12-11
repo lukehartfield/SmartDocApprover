@@ -67,7 +67,7 @@ The graphic below shows the ensemble approach we use to solve the problem end to
    - Group by overlapping boxes, vote by confidence.  
    - Outcome: ~**75%** average confidence on tough receipts.  
    ![OCR evaluation — fusion lifts confidence on skewed/low-light receipts](https://raw.githubusercontent.com/RogueTex/StreamingDataforModelTraining/main/assets/images/ocr_evaluation.png)
-   
+
    Shown below is OCR extraction on a sample receipt; fields are overlaid with color-coded boxes by confidence to highlight what the ensemble trusts most.
    ![OCR + LayoutLM demonstration](https://raw.githubusercontent.com/RogueTex/StreamingDataforModelTraining/main/assets/images/OCR_plus_LayoutLMdemonstrationSumamry.png)
 
@@ -108,7 +108,7 @@ Receipts are messy and diverse—fonts, crops, lighting, vendors, and handwritte
 
 ---
 
-## Results (100-Sample Test)
+## Results!
 | Component | Result |
 |-----------|--------|
 | Document Classification | 98% accuracy |
@@ -141,8 +141,11 @@ Below is a walkthrough of the earlier sample receipt: the key fields were detect
 
 ---
 
-## What Makes It “Agentic”
+## Now, What Makes It “Agentic”?
+We orchestrate the whole pipeline as an agentic workflow: the graph routes receipts through classification → OCR → extraction → anomaly, retries when confidence is low, and stops early for non-receipts. The graphics below show how the agent stitches these pieces together end to end.
+
 ![Agentic workflow](https://raw.githubusercontent.com/RogueTex/StreamingDataforModelTraining/main/assets/images/agentic_Workflow.png)
+
 ![Agentic workflow (full view)](https://raw.githubusercontent.com/RogueTex/StreamingDataforModelTraining/main/assets/images/Agentic_full_worfklow_result_2.png)
 - **Adaptive:** Retries with enhanced images; conditional skips for non-receipts.
 - **Stateful:** Decisions consider classification, OCR confidence, and anomalies together.
