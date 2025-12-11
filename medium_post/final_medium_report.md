@@ -58,7 +58,7 @@ We layer four decisions to stay robust: classification filters out non-receipts;
 ### The Four Ensembles!
 1) **Document Classification (ViT + ResNet + stacking)**  
    - Global layout + texture cues; meta-learner balances them.  
-   - Outcome: **98%** accuracy.
+   - Outcome: **98%** accuracy on single models; the ensemble gates to 100% on our validation/test set, ensuring only receipts flow downstream.
    ![Classifier evaluation](https://raw.githubusercontent.com/RogueTex/StreamingDataforModelTraining/main/assets/images/classifier_evaluation.png)
 
 2) **OCR Ensemble (EasyOCR + TrOCR + PaddleOCR + Tesseract)**  
