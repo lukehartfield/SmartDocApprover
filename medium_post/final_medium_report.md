@@ -8,14 +8,15 @@
 ![Pipeline summary](https://raw.githubusercontent.com/RogueTex/StreamingDataforModelTraining/main/assets/images/header_image.png)
 
 ## TL;DR
-- We built an end-to-end, agentic receipt-processing system that:
+
+We built an end-to-end, agentic receipt-processing system that:
   - Classifies images as receipts vs. non-receipts
   - Runs OCR with automatic retries on low-quality images
   - Extracts vendor, date, total, and amount using a 4-way ensemble
   - Detects suspicious receipts with an anomaly ensemble
   - Routes documents to approve / review / reject using a LangGraph workflow
   - Learns from human corrections via a Gradio UI
-- Try it: [Hugging Face Spaces demo](https://huggingface.co/spaces/Rogue2003/Receipt_Agent) and full repo links below.
+Try it: [Hugging Face Spaces demo](https://huggingface.co/spaces/Rogue2003/Receipt_Agent) and full repo links below.
 
 ---
 
